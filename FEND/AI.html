@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FEND: Frontend Website Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-dark': '#0d0d13',
+                        'secondary-dark': '#262627',
+                        'header-dark': '#222225',
+                        'purple-start': '#a01df2',
+                        'purple-mid': '#c965b5',
+                        'purple-end': '#a372c6',
+                        'button-start': '#9b00fc',
+                        'button-end': '#da86c9',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        .text-gradient {
+            background: linear-gradient(135deg, #9b00fc, #da86c9);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .btn-gradient {
+            background: linear-gradient(135deg, #9b00fc, #da86c9);
+            transition: all 0.3s ease;
+            border-radius: 5px;
+        }
+        .btn-gradient:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 15px rgba(155, 0, 252, 0.4);
+        }
+        .code-block {
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 0.75rem;
+            padding: 1rem;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #222225;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #4f46e5;
+            border-radius: 10px;
+        }
+        .history-list {
+            max-height: calc(100vh - 18rem); 
+            overflow-y: auto;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .loading-dot {
+            animation: pulse 1.5s infinite;
+        }
+        .loading-dot:nth-child(2) { animation-delay: 0.3s; }
+        .loading-dot:nth-child(3) { animation-delay: 0.6s; }
+
+        @media (max-width:480px) {
+            .bottom{
+                margin-bottom:40px ;
+            }
+        }
+    </style>
+</head>
+<body class="bg-primary-dark font-sans text-white h-screen overflow-hidden">
+    <div class="flex h-full w-full p-4 gap-4">
+
+        <div id="sidebar" class="w-64 bg-secondary-dark rounded-xl shadow-2xl p-4 flex-col flex-shrink-0 
+            md:flex md:static md:w-64 
+            fixed top-4 left-[-100%] h-[calc(100vh-2rem)] z-40 transition-all duration-300"> 
+            
+            <div class="header flex items-center justify-between bg-header-dark rounded-xl p-3 shadow-lg flex-shrink-0">
+                <span class="flex items-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-mid" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M13.85 2.15a1.5 1.5 0 0 0-1.7 0L8.23 4.58a.5.5 0 0 0-.23.43v14a.5.5 0 0 0 .23.43l3.92 2.43a1.5 1.5 0 0 0 1.7 0l3.92-2.43a.5.5 0 0 0 .23-.43v-14a.5.5 0 0 0-.23-.43zM12 20.91l-3.5-2.18V6.09l3.5 2.18v12.64zm0-12.64l3.5-2.18V6.09L12 8.27z"/>
+                    </svg>
+                    <h1 class="text-2xl font-extrabold text-gradient">FEND</h1>
+                </span>
+                <button id="close-sidebar-btn" class="md:hidden text-gray-400 hover:text-white" onclick="toggleSidebar()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="mt-4 pb-4 border-b border-header-dark flex-shrink-0">
+                <h2 class="text-lg font-semibold text-purple-start mb-2">Quick Starts</h2>
+                <div id="quick-prompts" class="grid gap-2">
+                    <button class="quick-prompt-btn btn-gradient h-8 text-sm font-medium text-white shadow-md" data-prompt="Create a responsive business landing page for a sustainable coffee startup.">Coffee Landing Page</button>
+                    <button class="quick-prompt-btn btn-gradient h-8 text-sm font-medium text-white shadow-md" data-prompt="Design a clean, modern portfolio website for a graphic designer.">Designer Portfolio</button>
+                </div>
+            </div>
+            <div class="mt-4 text-purple-start flex-grow overflow-hidden flex flex-col">
+                <h2 class="text-lg font-semibold mb-2">History</h2>
+                <div id="history-list" class="history-list space-y-1 text-sm text-gray-400 custom-scrollbar">
+                    <p class="text-xs text-gray-600 p-2">Loading history...</p>
+                </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-header-dark flex-shrink-0">
+                <p class="text-xs text-gray-500 mb-2" id="user-id-display">Local Mode</p>
+                <a href="#" class="text-xs text-purple-400 hover:text-purple-300">About FEND Generator</a>
+            </div>
+        </div>
+
+        <div id="sidebar-backdrop" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden" onclick="toggleSidebar()"></div>
+
+        <div class="flex-1 bg-secondary-dark rounded-xl flex flex-col shadow-2xl overflow-hidden">
+            <div class="p-4 sm:p-6 border-b border-header-dark flex-shrink-0 flex items-center">
+                <button id="hamburger-btn" class="mr-4 md:hidden text-gray-400 hover:text-white" onclick="toggleSidebar()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <div>
+                    <h2 class="text-2xl sm:text-4xl font-extrabold">Welcome To <span class="text-gradient">FEND</span></h2>
+                    <p class="text-gray-400 mt-1 text-sm sm:text-base">Your AI partner for generating beautiful, functional frontend code.</p>
+                </div>
+            </div>
+            <div id="chat-container" class="flex-grow overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar">
+                <div class="flex justify-center items-center h-full" id="initial-placeholder">
+                    <div class="text-center text-gray-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v14m-9 3l9-3m-9-3l12-3"/>
+                        </svg>
+                        <p class="mt-2 text-base sm:text-lg">Start by describing the website you want to build!</p>
+                        <p class="text-xs sm:text-sm mt-1 text-gray-600">Generated code will appear here for you to copy and preview.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 flex-shrink-0  bottom" >
+                <div class="flex items-center gap-4 bg-header-dark rounded-2xl p-2 shadow-xl">
+                    <input type="text" id="prompt-input" placeholder="Describe what you want to build..." 
+                        class="flex-grow h-12 bg-transparent text-white placeholder-gray-500 text-sm sm:text-base md:text-lg border-none focus:ring-0 focus:outline-none px-2 sm:px-4">
+                    <button id="send-btn" class="flex-shrink-0 h-10 w-10 md:h-12 md:w-12 rounded-full btn-gradient flex items-center justify-center shadow-lg hover:shadow-2xl disabled:opacity-50" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white transform rotate-45 -mt-1 -mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // --- Sidebar Toggling Function ---
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('sidebar-backdrop');
+        const body = document.body;
+
+        window.toggleSidebar = () => {
+            const isOpen = sidebar.classList.contains('left-0');
+            if (isOpen) {
+                sidebar.classList.replace('left-0', 'left-[-100%]');
+                backdrop.classList.add('hidden');
+                body.style.overflow = '';
+            } else {
+                sidebar.classList.replace('left-[-100%]', 'left-0');
+                backdrop.classList.remove('hidden');
+                body.style.overflow = 'hidden';
+            }
+        };
+
+        // --- Local History Functions ---
+        window.chatHistoryData = {};
+
+        window.saveConversationToLocal = (prompt, response_code) => {
+            const history = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+            const id = Date.now().toString();
+            history.push({
+                id,
+                title: prompt.split(/\s+/).slice(0, 5).join(' ') + '...',
+                prompt,
+                response_code,
+                timestamp: Date.now()
+            });
+            localStorage.setItem('chatHistory', JSON.stringify(history));
+        };
+
+        window.setupLocalHistoryListener = () => {
+            const historyListEl = document.getElementById('history-list');
+            const historyData = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+            window.chatHistoryData = {};
+            historyListEl.innerHTML = '';
+
+            if (historyData.length === 0) {
+                historyListEl.innerHTML = '<p class="text-xs text-gray-600 p-2">No conversation history yet.</p>';
+                return;
+            }
+
+            historyData.sort((a, b) => b.timestamp - a.timestamp);
+
+            historyData.forEach(item => {
+                window.chatHistoryData[item.id] = item;
+                const date = new Date(item.timestamp);
+                const formattedTime = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+                const historyItem = document.createElement('div');
+                historyItem.id = `history-${item.id}`;
+                historyItem.className = 'history-item p-2 rounded-lg hover:bg-header-dark cursor-pointer transition-colors space-y-0.5';
+                historyItem.innerHTML = `
+                    <p class="font-medium text-sm text-gray-200 truncate">${item.title}</p>
+                    <p class="text-xs text-gray-500">${date.toLocaleDateString()} at ${formattedTime}</p>
+                `;
+                historyItem.addEventListener('click', () => {
+                    window.displayConversation(item.id);
+                    if (window.innerWidth < 768) toggleSidebar();
+                });
+                historyListEl.appendChild(historyItem);
+            });
+        };
+
+        const chatContainer = document.getElementById('chat-container');
+        const promptInput = document.getElementById('prompt-input');
+        const sendButton = document.getElementById('send-btn');
+        const quickPromptButtons = document.querySelectorAll('.quick-prompt-btn');
+        let isGenerating = false;
+
+        function clearChatContainer() {
+            chatContainer.innerHTML = '';
+            document.getElementById('initial-placeholder')?.remove();
+        }
+
+        function appendMessage(role, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'}`;
+            const contentDiv = document.createElement('div');
+            
+            if (role === 'user') {
+                contentDiv.className = 'max-w-xl bg-purple-600/80 text-white p-3 rounded-t-xl rounded-bl-xl shadow-lg break-words';
+                contentDiv.textContent = content;
+            } else {
+                contentDiv.className = 'max-w-full bg-header-dark text-gray-200 p-4 rounded-xl shadow-2xl overflow-x-auto';
+                
+                // Extract code from markdown blocks
+                const codeMatch = content.match(/```html\n?([\s\S]*?)\n?```/) || [null, content];
+                const codeContent = (codeMatch[1] || content).trim();
+
+                const buttonGroup = document.createElement('div');
+                buttonGroup.className = 'flex justify-end space-x-2 mb-2';
+                
+                const previewBtn = document.createElement('button');
+                previewBtn.textContent = 'Preview';
+                previewBtn.className = 'px-3 py-1 bg-purple-500 hover:bg-purple-600 rounded-md text-xs font-semibold transition-colors';
+                previewBtn.onclick = () => showPreviewModal(codeContent);
+                
+                const copyBtn = document.createElement('button');
+                copyBtn.textContent = 'Copy Code';
+                copyBtn.className = 'px-3 py-1 bg-green-500 hover:bg-green-600 rounded-md text-xs font-semibold transition-colors';
+                copyBtn.onclick = () => copyToClipboard(codeContent);
+                
+                buttonGroup.appendChild(copyBtn);
+                buttonGroup.appendChild(previewBtn);
+                contentDiv.appendChild(buttonGroup);
+
+                const pre = document.createElement('pre');
+                pre.className = 'code-block text-xs md:text-sm font-mono bg-secondary-dark p-3 rounded-lg border border-purple-800';
+                pre.textContent = codeContent;
+                contentDiv.appendChild(pre);
+            }
+            messageDiv.appendChild(contentDiv);
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        window.displayConversation = (historyId) => {
+            const conversation = window.chatHistoryData[historyId];
+            if (!conversation) return;
+            clearChatContainer();
+            document.querySelectorAll('.history-item').forEach(el => el.classList.remove('bg-purple-800/50'));
+            document.getElementById(`history-${historyId}`)?.classList.add('bg-purple-800/50');
+            appendMessage('user', conversation.prompt);
+            appendMessage('ai', conversation.response_code);
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showTempMessage('Code copied to clipboard!', 'bg-green-600');
+            }).catch(() => {
+                showTempMessage('Failed to copy code.', 'bg-red-600');
+            });
+        }
+
+        function showTempMessage(message, bgColorClass) {
+            let msgBox = document.getElementById('temp-message-box');
+            if (!msgBox) {
+                msgBox = document.createElement('div');
+                msgBox.id = 'temp-message-box';
+                msgBox.className = 'fixed top-5 left-1/2 transform -translate-x-1/2 p-3 rounded-lg shadow-xl text-white font-medium z-50 transition-opacity duration-300';
+                document.body.appendChild(msgBox);
+            }
+            msgBox.textContent = message;
+            msgBox.className = `fixed top-5 left-1/2 transform -translate-x-1/2 p-3 rounded-lg shadow-xl text-white font-medium z-50 opacity-100 ${bgColorClass}`;
+            clearTimeout(msgBox.timeoutId);
+            msgBox.timeoutId = setTimeout(() => {
+                msgBox.classList.replace('opacity-100', 'opacity-0');
+            }, 2000);
+        }
+
+        function toggleLoading(show) {
+            let loadingDiv = document.getElementById('loading-spinner');
+            if (show) {
+                if (!loadingDiv) {
+                    loadingDiv = document.createElement('div');
+                    loadingDiv.id = 'loading-spinner';
+                    loadingDiv.className = 'flex items-center space-x-2 text-purple-400 p-3 bg-header-dark rounded-xl shadow-lg max-w-xs mx-auto';
+                    loadingDiv.innerHTML = `
+                        <div class="loading-dot w-3 h-3 bg-purple-500 rounded-full"></div>
+                        <div class="loading-dot w-3 h-3 bg-purple-500 rounded-full"></div>
+                        <div class="loading-dot w-3 h-3 bg-purple-500 rounded-full"></div>
+                        <span class="text-sm font-medium">Generating Code...</span>
+                    `;
+                    chatContainer.appendChild(loadingDiv);
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+            } else if (loadingDiv) {
+                loadingDiv.remove();
+            }
+            isGenerating = show;
+            sendButton.disabled = show || promptInput.value.trim() === '';
+        }
+
+        function showPreviewModal(htmlContent) {
+            const backdrop = document.createElement('div');
+            backdrop.className = 'fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4';
+            const modal = document.createElement('div');
+            modal.className = 'bg-secondary-dark rounded-xl shadow-2xl w-full h-full max-w-6xl max-h-[90vh] flex flex-col';
+            modal.innerHTML = `
+                <div class="p-4 border-b border-header-dark flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-gradient">Live Preview</h3>
+                    <button id="close-modal-btn" class="text-gray-400 hover:text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="flex-grow bg-white overflow-hidden rounded-b-xl">
+                    <iframe id="preview-iframe" class="w-full h-full"></iframe>
+                </div>
+            `;
+            backdrop.appendChild(modal);
+            document.body.appendChild(backdrop);
+            
+            const iframe = document.getElementById('preview-iframe');
+            const iframeDoc = iframe.contentWindow.document;
+            iframeDoc.open();
+            iframeDoc.write(htmlContent);
+            iframeDoc.close();
+
+            const close = () => backdrop.remove();
+            document.getElementById('close-modal-btn').onclick = close;
+            backdrop.onclick = (e) => { if (e.target === backdrop) close(); };
+        }
+
+        // --- FIXED GEMINI API LOGIC ---
+        const API_KEY = "AIzaSyBVAtRwiy7qmOjp8gZIAh-KJt29KA2MhQ4";
+        const MODEL = "gemini-2.5-flash"; // Correct stable version
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
+
+        async function callGeminiApi(prompt, attempt = 0) {
+            const maxAttempts = 3;
+            const systemPrompt = `You are a world-class frontend code generator. Generate a single-file, responsive HTML website using Tailwind CSS. Include all necessary CSS/JS. Return ONLY the markdown code block.`;
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] }
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || "API request failed");
+                }
+
+                const result = await response.json();
+                return result.candidates[0].content.parts[0].text;
+            } catch (error) {
+                if (attempt < maxAttempts) {
+                    await new Promise(r => setTimeout(r, 2000));
+                    return callGeminiApi(prompt, attempt + 1);
+                }
+                return "Error: " + error.message;
+            }
+        }
+
+        async function sendMessage(promptText) {
+            const trimmedPrompt = promptText.trim();
+            if (!trimmedPrompt || isGenerating) return;
+            
+            promptInput.value = '';
+            clearChatContainer();
+            appendMessage('user', trimmedPrompt);
+            toggleLoading(true);
+
+            try {
+                const aiResponse = await callGeminiApi(trimmedPrompt);
+                toggleLoading(false);
+                appendMessage('ai', aiResponse);
+                window.saveConversationToLocal(trimmedPrompt, aiResponse);
+                window.setupLocalHistoryListener();
+            } catch (error) {
+                toggleLoading(false);
+                appendMessage('ai', 'An error occurred while generating code.');
+            }
+        }
+
+        sendButton.addEventListener('click', () => sendMessage(promptInput.value));
+        promptInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(promptInput.value); });
+        promptInput.addEventListener('input', () => { sendButton.disabled = promptInput.value.trim() === '' || isGenerating; });
+        quickPromptButtons.forEach(btn => btn.onclick = () => { promptInput.value = btn.dataset.prompt; sendMessage(btn.dataset.prompt); });
+
+        window.setupLocalHistoryListener();
+    </script>
+</body>
+</html>
