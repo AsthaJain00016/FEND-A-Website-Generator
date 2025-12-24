@@ -371,9 +371,8 @@
             backdrop.onclick = (e) => { if (e.target === backdrop) close(); };
         }
 
-        // --- FIXED GEMINI API LOGIC ---
-        const API_KEY = "AIzaSyBVAtRwiy7qmOjp8gZIAh-KJt29KA2MhQ4";
-        const MODEL = "gemini-2.5-flash"; // Correct stable version
+        const API_KEY = "AIzaSyDon28L2OuUeqMb7ueJD7bz6vtmX4G14rs";
+        const MODEL = "gemini-2.5-flash"; 
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
 
         async function callGeminiApi(prompt, attempt = 0) {
@@ -435,4 +434,5 @@
         window.setupLocalHistoryListener();
     </script>
 </body>
+
 </html>
